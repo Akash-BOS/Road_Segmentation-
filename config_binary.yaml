@@ -1,0 +1,69 @@
+data:
+  data_path: F:\Akash\Data\25thjuly\newData_v2
+  mask_mode: binary
+  height: 1024
+  width: 419
+  in_channels: 3
+  num_classes: 2
+
+model:
+  name: unetpp
+  deep_supervision: true
+  attention: gate
+  context: aspp
+  norm: group
+  activation: silu
+  dilated_encoder: true
+  no_edge_head: false
+
+training:
+  output_dir: weights\lcms_unetpp_binary_31july
+  epochs: 120
+  batch_size: 4
+  num_workers: 0
+  lr: 0.00001
+  weight_decay: 0.0001
+  warmup_epochs: 2
+  grad_clip: 1.0
+  amp: false
+  ema: true
+  monitor_metric: mean_iou
+  monitor_mode: max
+  early_stopping_patience: 12
+
+patch:
+  patch_height: 512
+  patch_width: 384
+  samples_per_image: 8
+  anomaly_ratio: 0.8
+  random_crop_ratio: 0.15
+  full_image_ratio: 0.65
+  min_target_pixels: 48
+  target_crop_attempts: 48
+  class_sampling_weights: "1:1"
+
+loss:
+  region_loss: tversky
+  dice_weight: 0.5
+  tversky_alpha: 0.45
+  tversky_beta: 0.55
+  tversky_gamma: 1.0
+  loss_class_weights: 0:0.25,1:4
+  focal_weight: 0.25
+  boundary_weight: 0.03
+  edge_weight: 0.2
+  aux_weight: 0.4
+
+checkpoint:
+  # For binary training from a multiclass model, use init_checkpoint, not resume.
+  # The encoder/decoder weights load; the incompatible 6-class heads are skipped.
+  init_checkpoint: F:/Akash/CodeHub/lcms_unetpp/weights/lcms_unetpp_31stjuly_finetune/best_mean_iou.pth
+
+clearml:
+  clearml_project: LCMS Crack Segmentation
+  clearml_task_name: lcms_unetpp_binary_31july
+  clearml_tags: unetpp,binary,31stJuly_newData_v2
+  clearml_config_file: clearml.conf
+  clearml_output_uri: ""
+  clearml_offline: false
+  no_clearml_models: false

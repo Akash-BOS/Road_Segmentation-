@@ -1,0 +1,139 @@
+data:
+  # Dataset root must contain TRAIN/VAL folders, and TEST for final evaluation.
+  data_path: F:\Akash\Data\25thjuly\newData_v1
+  mask_mode: color
+  height: 1024
+  width: 419
+  in_channels: 3
+  num_classes: 6
+
+model:
+  # Choose one:
+  #   unetpp
+  #   hrnet_ocr
+  name: unetpp
+  deep_supervision: true
+
+  # UNet++ options, used when name: unetpp.
+  attention: gate          # gate, cbam, se, none
+  context: aspp            # aspp, pyramid, identity, none
+  norm: group              # batch, group, instance
+  activation: silu         # relu, silu, gelu, leaky_relu
+  dilated_encoder: true
+  no_edge_head: false
+
+  # HRNet + OCR options, used when name: hrnet_ocr.
+  hrnet_width: 32
+  hrnet_norm: batch        # batch is usually best for HRNet if batch size is stable
+  hrnet_activation: relu
+  ocr_mid_channels: 512
+  ocr_key_channels: 256
+
+training:
+  output_dir: weights\lcms_unetpp_30july_newData_v2
+  epochs: 180
+  batch_size: 4
+  num_workers: 0
+  lr: 0.000005
+  weight_decay: 0.0001
+  warmup_epochs: 1
+  grad_clip: 1.0
+  amp: false
+  ema: true
+  monitor_metric: mean_iou
+  monitor_mode: max
+  early_stopping_patience: 10
+
+patch:
+  patch_height: 512
+  patch_width: 384
+  samples_per_image: 8
+  anomaly_ratio: 0.9
+  random_crop_ratio: 0.05
+  full_image_ratio: 0.6
+  min_target_pixels: 48
+  target_crop_attempts: 48
+  class_sampling_weights: 1:2,2:8,3:8,4:2,5:8
+
+loss:
+  # Choose one:
+  #   dice      - current default, balanced overlap loss
+  #   tversky   - better when false negatives on thin cracks are costly
+  region_loss: tversky
+  dice_weight: 0.5
+
+  # Tversky is used only when region_loss: tversky.
+  # alpha penalizes false positives, beta penalizes false negatives.
+  # For crack recall, beta > alpha is usually useful.
+  tversky_alpha: 0.4
+  tversky_beta: 0.6
+  tversky_gamma: 1.0
+
+  loss_class_weights: 0:0.2,1:1,2:8,3:8,4:2,5:6
+  focal_weight: 0.25
+  boundary_weight: 0.03
+  edge_weight: 0.2
+  aux_weight: 0.4
+
+checkpoint:
+  # Use this only when the checkpoint architecture is compatible.
+  # UNet++ -> UNet++ works. UNet++ -> HRNet+OCR will load very little.
+  # init_checkpoint: F:/Akash/CodeHub/lcms_unetpp/weights/lcms_unetpp_28july_newData_v2/best.pth
+
+clearml:
+  # ClearML logging is enabled by default unless --no-clearml is passed.
+  clearml_project: LCMS Crack Segmentation
+  clearml_task_name: lcms_unetpp_31stJuly_newData_v2
+  clearml_tags: unetpp,31stJuly_newData_v2
+  clearml_config_file: clearml.conf
+  clearml_output_uri: ""
+  clearml_offline: false
+  no_clearml_models: false
+
+# Example UNet++ model block:
+#
+# model:
+#   name: unetpp
+#   deep_supervision: true
+#   attention: gate
+#   context: aspp
+#   norm: group
+#   activation: silu
+#   dilated_encoder: false
+#   no_edge_head: false
+#
+# Example HRNet + OCR model block:
+#
+# model:
+#   name: hrnet_ocr
+#   deep_supervision: true
+#   hrnet_width: 32
+#   hrnet_norm: batch
+#   hrnet_activation: relu
+#   ocr_mid_channels: 512
+#   ocr_key_channels: 256
+#
+# Example Dice loss block:
+#
+# loss:
+#   region_loss: dice
+#   dice_weight: 0.5
+#   loss_class_weights: 0:0.1,1:1,2:12,3:12,4:2,5:2
+#   focal_weight: 0.25
+#   boundary_weight: 0.03
+#   edge_weight: 0.0
+#   aux_weight: 0.4
+#
+# Example Tversky loss block:
+#
+# loss:
+#   region_loss: tversky
+#   dice_weight: 0.5
+#   tversky_alpha: 0.3
+#   tversky_beta: 0.7
+#   tversky_gamma: 1.0
+#   loss_class_weights: 0:0.1,1:1,2:12,3:12,4:2,5:2
+#   focal_weight: 0.25
+#   boundary_weight: 0.03
+#   edge_weight: 0.0
+#   aux_weight: 0.4

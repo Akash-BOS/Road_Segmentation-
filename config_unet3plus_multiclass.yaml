@@ -1,0 +1,85 @@
+data:
+  data_path: F:\Akash\Data\25thjuly\newData_v1
+  mask_mode: color
+  height: 1024
+  width: 419
+  in_channels: 3
+  num_classes: 6
+
+model:
+  name: unet3plus
+  deep_supervision: true
+  norm: group
+  activation: silu
+  no_edge_head: false
+
+  # UNet 3+ options.
+  # base_channels controls encoder width; cat_channels controls each full-scale
+  # skip branch before concatenation. Increase only if GPU memory allows it.
+  unet3plus_base_channels: 32
+  unet3plus_cat_channels: 32
+  unet3plus_dropout: 0.1
+
+training:
+  output_dir: weights\lcms_unet3plus_multiclass
+  epochs: 180
+  batch_size: 4
+  num_workers: 0
+  lr: 0.00001
+  weight_decay: 0.0001
+  warmup_epochs: 2
+  grad_clip: 1.0
+  amp: false
+  ema: true
+  monitor_metric: mean_iou
+  monitor_mode: max
+  early_stopping_patience: 30
+
+patch:
+  patch_height: 512
+  patch_width: 384
+  samples_per_image: 8
+  anomaly_ratio: 0.8
+  random_crop_ratio: 0.15
+  full_image_ratio: 0.65
+  min_target_pixels: 48
+  target_crop_attempts: 48
+  # Foreground-aware patch extension: target-centered crops include extra
+  # context, then resize back to patch_height x patch_width.
+  foreground_extension_ratio: 0.35
+  # Class-balanced sampling: rare classes get more target-centered exposure.
+  class_sampling_weights: 1:2,2:6,3:12,4:2,5:12
+
+loss:
+  # Focal Tversky: beta > alpha emphasizes recall for thin crack pixels.
+  region_loss: tversky
+  dice_weight: 0.5
+  tversky_alpha: 0.3
+  tversky_beta: 0.7
+  tversky_gamma: 1.33
+  loss_class_weights: 0:0.25,1:1,2:6,3:12,4:2,5:8
+  focal_weight: 0.25
+  # Boundary-aware auxiliary losses for thin crack structures.
+  boundary_weight: 0.03
+  edge_weight: 0.2
+  aux_weight: 0.4
+  # Online hard example mining starts after the model has begun converging.
+  ohem_start_epoch: 40
+  ohem_ratio: 0.25
+  ohem_min_kept: 8192
+  # Lovasz-Softmax starts in the last 30 epochs to fine-tune directly for IoU.
+  lovasz_start_epoch: 150
+  lovasz_weight: 0.2
+
+checkpoint:
+  resume: ""
+  init_checkpoint: ""
+
+clearml:
+  clearml_project: LCMS Crack Segmentation
+  clearml_task_name: lcms_unet3plus_multiclass
+  clearml_tags: unet3plus,multiclass
+  clearml_config_file: clearml.conf
+  clearml_output_uri: ""
+  clearml_offline: false
+  no_clearml_models: false
