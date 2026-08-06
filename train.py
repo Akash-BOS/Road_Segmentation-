@@ -14,9 +14,9 @@ from torch.utils.data import DataLoader
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from lcms_unetpp.config import apply_config_defaults, load_yaml_config
-from lcms_unetpp.clearml_utils import ClearMLRun
-from lcms_unetpp.data import (
+from config import apply_config_defaults, load_yaml_config
+from clearml_utils import ClearMLRun
+from data import (
     BiasedPatchTrainTransform,
     EvalTransform,
     LCMSCrackDataset,
@@ -24,11 +24,11 @@ from lcms_unetpp.data import (
     MixedFullPatchDataset,
     TrainTransform,
 )
-from lcms_unetpp.engine import ModelEMA, create_warmup_cosine_scheduler, evaluate, train_one_epoch
-from lcms_unetpp.logging_utils import log_environment, setup_logging, timestamp, write_json
-from lcms_unetpp.losses import CrackSegmentationLoss
-from lcms_unetpp.metrics import append_history, plot_history, truncate_history
-from lcms_unetpp.models import build_model_from_args
+from engine import ModelEMA, create_warmup_cosine_scheduler, evaluate, train_one_epoch
+from logging_utils import log_environment, setup_logging, timestamp, write_json
+from losses import CrackSegmentationLoss
+from metrics import append_history, plot_history, truncate_history
+from models import build_model_from_args
 
 
 def parse_args() -> argparse.Namespace:

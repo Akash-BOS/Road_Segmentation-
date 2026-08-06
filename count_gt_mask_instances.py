@@ -4,7 +4,10 @@ The script expects LCMS color masks that use the same RGB palette as data.py.
 For each foreground class it counts connected components in every mask, then
 writes dataset-level totals plus optional per-mask details.
 """
+
 from __future__ import annotations
+
+
 
 import argparse
 import csv
@@ -19,7 +22,7 @@ from PIL import Image
 if __package__ is None or __package__ == "":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from lcms_unetpp.data import COLOR_MAP, IGNORE_INDEX
+from data import COLOR_MAP, IGNORE_INDEX
 
 
 VALID_MASK_EXTS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp"}
