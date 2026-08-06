@@ -8,7 +8,7 @@ from typing import Callable, Dict, Iterable, Mapping
 import torch
 from torch import nn
 
-from .metrics import SegmentationMetrics
+from metrics import SegmentationMetrics
 
 
 class ModelEMA:
