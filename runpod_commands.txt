@@ -1,0 +1,78 @@
+Runpod Command Reference
+
+1. Connect to Runpod SSH
+ssh cxov3dyqb5jw3s-64411bea@ssh.runpod.io -i "C:\Users\Admin\.ssh\id_ed25519_akash"
+
+2. Verify GPU on the pod
+nvidia-smi
+
+3. Clone repo on the Runpod pod
+cd /root
+git clone https://github.com/Akash-BOS/Road_Segmentation-.git
+cd Road_Segmentation-
+
+4. Install Python dependencies
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+5. Prepare remote data folder
+mkdir -p /root/data
+
+6. Upload data from Windows using SCP (local command)
+scp -i "C:\Users\Admin\.ssh\id_ed25519_akash" -r "F:\Akash\Data\25thjuly\newData_v1" cxov3dyqb5jw3s-64411bea@ssh.runpod.io:/root/data
+
+7. Upload using exposed TCP port (local command)
+scp -i "C:\Users\Admin\.ssh\id_ed25519_akash" -P 22084 -r "F:\Akash\Data\25thjuly\newData_v1" root@69.30.85.113:/root/data
+
+8. Upload data with WinSCP / SFTP
+Host: ssh.runpod.io
+Username: cxov3dyqb5jw3s-64411bea
+Private key: C:\Users\Admin\.ssh\id_ed25519_akash
+Remote folder: /root/data
+
+Option D: Download from URL on the pod
+cd /root
+wget "https://example.com/dataset.zip"
+unzip dataset.zip
+
+13. Optional: install 7zip on the pod
+apt-get update
+apt-get install -y p7zip-full
+
+14. Extract a .7z archive on the pod
+7z x Dataset_Asphalt.7z
+
+Direct TCP alternative:
+Host: 69.30.85.113
+Port: 22084
+Username: root
+Private key: C:\Users\Admin\.ssh\id_ed25519_akash
+
+9. Verify uploaded dataset on the pod
+ls /root/data/newData_v1
+
+10. Run training without ClearML
+cd /root/Road_Segmentation-
+python train.py --config config_multiclass.yaml --data-path /root/data/newData_v1 --output-dir /root/weights/lcms_unetpp --no-clearml --num-workers 2 --batch-size 4 --amp
+
+11. Run training in ClearML offline mode
+cd /root/Road_Segmentation-
+python train.py --config config_multiclass.yaml --data-path /root/data/newData_v1 --output-dir /root/weights/lcms_unetpp --clearml-offline --num-workers 2 --batch-size 4 --amp
+
+12. Binary training without ClearML
+cd /root/Road_Segmentation-
+python train.py --config config_binary.yaml --data-path /root/data/newData_v1 --output-dir /root/weights/lcms_unetpp --no-clearml --num-workers 2 --batch-size 4 --amp
+
+
+
+13. Download the whole output folder from Runpod (local Windows PowerShell)
+scp -i "C:\Users\Admin\.ssh\id_ed25519_akash" -r cxov3dyqb5jw3s-64411bea@ssh.runpod.io:/root/weights/lcms_unetpp "C:\Users\Admin\Downloads\lcms_unetpp"
+
+14. Download the whole output folder using direct TCP port (local Windows PowerShell)
+scp -i "C:\Users\Admin\.ssh\id_ed25519_akash" -P 22084 -r root@69.30.85.113:/root/weights/lcms_unetpp "C:\Users\Admin\Downloads\lcms_unetpp"
+
+Important notes:
+- Use Windows paths only on your local machine, not inside the pod.
+- Use Linux paths inside the Runpod pod.
+- If ClearML cannot connect, use --no-clearml.
+- If the data is already on the pod, use /root/data/newData_v1 as --data-path.
